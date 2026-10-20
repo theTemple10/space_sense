@@ -67,6 +67,7 @@ public partial class MainWindow : Window
         {
             StatusText.Text = "Scanning… You can cancel at any time.";
             var result = await Task.Run(() => new StorageScanner().Scan(picker.FolderName, throttled, cancellation.Token));
+            cancellation.Token.ThrowIfCancellationRequested();
             if (closed) return;
             TotalSize.Text = StorageNode.FormatBytes(result.Root.Bytes);
             ScanSummary.Text = $"{result.Items:N0} items inspected · {(result.Root.IsIncomplete ? "Partial scan — some sizes are missing" : "Scan complete")}";
@@ -210,7 +211,8 @@ public partial class MainWindow : Window
 
     private static DataGridRow? FindRow(DependencyObject source)
     {
-        for (DependencyObject? current = source; current is not null; current = VisualTreeHelper.GetParent(current))
+        for (DependencyObject? current = source; current is not null;
+             current = current is Visual ? VisualTreeHelper.GetParent(current) : LogicalTreeHelper.GetParent(current))
             if (current is DataGridRow row) return row;
         return null;
     }

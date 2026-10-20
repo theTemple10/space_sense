@@ -61,7 +61,7 @@ public sealed class StorageScanner(int maxItems = 250_000)
                             RecordUnread(child, $"Skipped link or cloud reparse point: {entry.FullName}");
                         }
                         else if (child.IsDirectory) pending.Push(child);
-                        else child.Bytes = ((FileInfo)entry).Length;
+                        else child.Bytes = new FileInfo(entry.FullName).Length;
                     }
                     catch (Exception ex) when (IsReadFailure(ex))
                     {

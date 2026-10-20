@@ -18,12 +18,20 @@ try
     Check(result.Root.Bytes == 48 && result.Items == 4, "Nested file sizes aggregate correctly");
     Check(!result.Root.IsIncomplete && result.UnreadItems == 0, "Complete scan is marked complete");
     Check(result.Root.Children[0].Name == "nested", "Largest child appears first");
+    Check(File.ReadAllBytes(Path.Combine(fixture, "a.bin")).Length == 17 &&
+        File.ReadAllBytes(Path.Combine(fixture, "nested", "b.bin")).Length == 31,
+        "Scanning leaves fixture files intact");
     var limited = new StorageScanner(2).Scan(fixture);
     Check(limited.LimitReached && limited.Root.IsIncomplete, "Bounded scans disclose incomplete totals");
     using var cancellation = new CancellationTokenSource();
     cancellation.Cancel();
     try { new StorageScanner().Scan(fixture, cancellationToken: cancellation.Token); throw new InvalidOperationException("Cancellation ignored"); }
     catch (OperationCanceledException) { Check(true, "Scan cancellation is honored"); }
+    try { new StorageScanner().Scan(Path.Combine(fixture, "a.bin")); throw new InvalidOperationException("File accepted as scan root"); }
+    catch (ArgumentException) { Check(true, "A file cannot be used as a folder scan root"); }
+    var partialEngine = new AssessmentEngine(new AssessmentContext("", "", "", "", "", fixture));
+    Check(partialEngine.Assess(limited.Root).Level == AssessmentLevel.Unknown,
+        "An incomplete temporary folder remains unknown");
     if (!OperatingSystem.IsWindows())
     {
         Directory.CreateSymbolicLink(Path.Combine(fixture, "loop"), fixture);
@@ -57,4 +65,10 @@ Check(Evaluate(@"C:\Windows.old", true).DeletionImpact.Contains("roll back"),
 Check(Evaluate(@"D:\Projects\demo\.git\objects", true).Level == AssessmentLevel.KeepOrUseSupportedCleanup,
     "Version control history is protected");
 Check(Evaluate(@"D:\unknown.db").Level == AssessmentLevel.Unknown, "Unrecognized database remains unknown");
+Check(Evaluate(@"C:\Users\Ada\AppData\Local\TempExtra\a.tmp").Level == AssessmentLevel.KeepOrUseSupportedCleanup,
+    "A temporary directory prefix cannot match a neighboring application folder");
+Check(Evaluate(@"c:\PROGRAM FILES\App\file.bin").Level == AssessmentLevel.KeepOrUseSupportedCleanup,
+    "Windows location comparisons ignore case");
+Check(Evaluate(@"D:\demo\.git-copy\file.bin").Level == AssessmentLevel.Unknown,
+    "Repository metadata rules match whole path segments");
 Console.WriteLine($"{checks} checks passed.");
