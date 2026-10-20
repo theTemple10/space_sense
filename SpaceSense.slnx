@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SpaceSense.Core/SpaceSense.Core.csproj" />
+    <Project Path="src/SpaceSense.Desktop/SpaceSense.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SpaceSense.Checks/SpaceSense.Checks.csproj" />
+  </Folder>
+</Solution>
