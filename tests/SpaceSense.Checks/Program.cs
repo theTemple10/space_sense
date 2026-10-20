@@ -35,4 +35,26 @@ try
 }
 finally { Directory.Delete(fixture, recursive: true); }
 
+var engine = new AssessmentEngine(new AssessmentContext(@"C:\Windows", @"C:\Program Files", @"C:\Program Files (x86)",
+    @"C:\ProgramData", @"C:\Users\Ada", @"C:\Users\Ada\AppData\Local\Temp"));
+Assessment Evaluate(string path, bool folder = false) => engine.Assess(new StorageNode(path, folder));
+Check(Evaluate(@"C:\Windows\Temp\a.tmp").Level == AssessmentLevel.KeepOrUseSupportedCleanup,
+    "Protected system paths override temporary-looking names");
+Check(Evaluate(@"C:\WindowsExtra\a.tmp").Level == AssessmentLevel.Unknown,
+    "Protected path comparisons respect directory boundaries");
+Check(Evaluate(@"C:\Users\Ada\Downloads\a.tmp").Level == AssessmentLevel.ReviewFirst,
+    "Temporary extension does not make a personal file disposable");
+Check(Evaluate(@"C:\Users\Ada\AppData\Local\Temp\a.tmp").Level == AssessmentLevel.LikelyRemovable,
+    "Recognized user temp files receive a conditional assessment");
+Check(Evaluate(@"C:\Users\Ada\AppData\Local\Temp", true).Level == AssessmentLevel.ReviewFirst,
+    "Temporary folders are not blanket cleanup candidates");
+Check(Evaluate(@"C:\Users\Ada\AppData\Local\App\data.db").Level == AssessmentLevel.KeepOrUseSupportedCleanup,
+    "Application databases are protected by context");
+Check(Evaluate(@"C:\Users\Ada\OneDrive - Company\report.pdf").DeletionImpact.Contains("cloud"),
+    "Recognizable cloud folders explain propagation risk");
+Check(Evaluate(@"C:\Windows.old", true).DeletionImpact.Contains("roll back"),
+    "Previous Windows installation explains loss of rollback");
+Check(Evaluate(@"D:\Projects\demo\.git\objects", true).Level == AssessmentLevel.KeepOrUseSupportedCleanup,
+    "Version control history is protected");
+Check(Evaluate(@"D:\unknown.db").Level == AssessmentLevel.Unknown, "Unrecognized database remains unknown");
 Console.WriteLine($"{checks} checks passed.");
