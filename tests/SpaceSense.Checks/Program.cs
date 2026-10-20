@@ -71,4 +71,9 @@ Check(Evaluate(@"c:\PROGRAM FILES\App\file.bin").Level == AssessmentLevel.KeepOr
     "Windows location comparisons ignore case");
 Check(Evaluate(@"D:\demo\.git-copy\file.bin").Level == AssessmentLevel.Unknown,
     "Repository metadata rules match whole path segments");
+Check(Evaluate(@"C:\hiberfil.sys").Purpose.Contains("hibernation"), "System hibernation file has a specific explanation");
+Check(Evaluate(@"D:\pagefile.sys").Level == AssessmentLevel.KeepOrUseSupportedCleanup,
+    "Paging files on another drive remain protected");
+Check(Evaluate(@"C:\Users\Ada\Downloads\pagefile.sys").Level == AssessmentLevel.ReviewFirst,
+    "A system-like file name in Downloads is assessed in its actual context");
 Console.WriteLine($"{checks} checks passed.");

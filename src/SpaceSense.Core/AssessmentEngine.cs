@@ -45,6 +45,17 @@ public sealed class AssessmentEngine(AssessmentContext context)
 
         string windows = Normalize(context.WindowsDirectory);
         int separator = windows.LastIndexOf('/');
+        string windowsVolume = separator >= 0 ? windows[..separator] : "";
+        if (!node.IsDirectory && windowsVolume.Length > 0 && path == windowsVolume + "/hiberfil.sys")
+            return Keep("The Windows hibernation file, used to preserve memory state for hibernation and Fast Startup.",
+                "Removing or disabling it affects hibernation and Fast Startup behavior.",
+                "Keep it unless you deliberately change Windows power configuration. Do not delete it manually.",
+                "Hibernation file name at the Windows volume root; power configuration was not checked");
+        if (!node.IsDirectory && path.Length > 3 && path[1] == ':' && path[2] == '/' && path[3..] == "pagefile.sys")
+            return Keep("A Windows paging file, normally used to extend committed memory capacity and support crash dumps.",
+                "Changing its configuration may affect memory capacity and crash reporting.",
+                "Keep the system-managed configuration unless you have a specific, verified reason to change it. Do not remove the file manually.",
+                "Paging file name at a drive root; active configuration was not checked");
         string previousWindows = separator >= 0 ? windows[..separator] + "/windows.old" : "";
         if (Under(path, previousWindows))
             return Keep("Files retained from a previous Windows installation.",

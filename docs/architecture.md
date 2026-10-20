@@ -36,4 +36,6 @@ All assessment text is bundled and processed locally. No telemetry or network ca
 - [OpenFolderDialog](https://learn.microsoft.com/en-us/dotnet/api/microsoft.win32.openfolderdialog)
 - [Storage Sense](https://learn.microsoft.com/en-us/windows/configuration/storage/storage-sense)
 - [Windows.old and rollback](https://support.microsoft.com/en-us/windows/deployment/install-upgrade/delete-your-previous-version-of-windows)
+- [Windows paging files](https://learn.microsoft.com/en-us/troubleshoot/windows-client/performance/introduction-to-the-page-file)
+- [Hibernation and power states](https://learn.microsoft.com/en-us/windows/win32/power/system-power-states)
 - [OneDrive local and cloud files](https://support.microsoft.com/en-us/office/save-disk-space-with-onedrive-files-on-demand-for-windows-0e6860d3-d9f3-4971-b321-7092438fb38e)
